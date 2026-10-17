@@ -1,0 +1,9 @@
+{
+  "name": "sooner-poller",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "nodemailer": "^10.1.2"
+  }
+}

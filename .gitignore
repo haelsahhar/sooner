@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+.env
+.env.*
+!.env.example
+next-env.d.ts
+*.tsbuildinfo
+.vercel
+.claude
+.DS_Store
+HANDOFF.md
