@@ -20,15 +20,6 @@ for (const [k, v] of Object.entries({ SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, G
   }
 }
 
-// Be polite: no overnight polling unless forced (manual runs set FORCE=true).
-const sydneyHour = Number(
-  new Intl.DateTimeFormat("en-AU", { timeZone: TZ, hour: "numeric", hourCycle: "h23" }).format(new Date()),
-);
-if (!process.env.FORCE && (sydneyHour >= 22 || sydneyHour < 6)) {
-  console.log(`Quiet hours (${sydneyHour}:00 Sydney) - skipping.`);
-  process.exit(0);
-}
-
 const fmt = (o) => new Intl.DateTimeFormat("en-AU", { timeZone: TZ, ...o });
 const clean = (s) => s.replace(/\s/g, " ").replace(",", "");
 const describe = (iso) =>

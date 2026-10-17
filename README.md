@@ -12,7 +12,7 @@ scripts/poll.mjs  ── reads HotDoc ──►  doctors table  ◄── reads 
                   ── emails people ◄── subscriptions  ◄── writes ── "Notify me" / confirm / unsubscribe
 ```
 
-- The website never calls HotDoc. Only the poller does, once per run for all doctors, with no polling 10pm to 6am Sydney time.
+- The website never calls HotDoc. Only the poller does, once per run for all doctors, every 10 minutes around the clock.
 - Each subscription remembers the earliest slot you last saw. If a new slot is earlier, you get an email and the baseline moves down. If a slot is taken and the doctor's next slot moves later, the baseline follows it, so a later cancellation still alerts you.
 - Sign-ups use a confirmation email (so nobody can sign up someone else's address). Every alert has an unsubscribe link.
 - Everything is on free tiers: Vercel, Supabase, GitHub Actions (public repo), Gmail SMTP.
@@ -70,5 +70,5 @@ check HotDoc's terms of service if you ever want to share this beyond family and
 cp .env.example .env.local   # fill in the values
 npm install
 npm run dev                  # http://localhost:3000
-SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... GMAIL_USER=... GMAIL_APP_PASSWORD=... SITE_URL=http://localhost:3000 FORCE=true npm run poll
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... GMAIL_USER=... GMAIL_APP_PASSWORD=... SITE_URL=http://localhost:3000 npm run poll
 ```
