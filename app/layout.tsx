@@ -7,7 +7,10 @@ export const metadata: Metadata = {
   description: "Get an email when your doctor at Rouse Hill Town Medical Centre has an earlier appointment.",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
   },
   appleWebApp: { capable: true, title: "Sooner", statusBarStyle: "default" },

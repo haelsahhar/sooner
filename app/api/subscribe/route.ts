@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/supabase";
-import { TRACKED, CENTRE } from "@/lib/doctors";
+import { CENTRE } from "@/lib/doctors";
 import { emailHtml, sendMail, siteUrl } from "@/lib/mail";
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
@@ -25,11 +25,18 @@ export async function POST(req: Request) {
   const slug = String(body.slug ?? "");
   if (email.length > 254 || !EMAIL_RE.test(email)) return fail("Enter a valid email address.");
 
-  const doctor = TRACKED.find((t) => t.slug === slug);
-  if (!doctor) return fail("Unknown doctor.");
+  if (!/^[a-z0-9-]{1,120}$/.test(slug)) return fail("Unknown doctor.");
 
   try {
     const sb = db();
+
+    const { data: doctor } = await sb
+      .from("doctors")
+      .select("name")
+      .eq("slug", slug)
+      .eq("active", true)
+      .maybeSingle();
+    if (!doctor) return fail("Unknown doctor.");
 
     const { data: existing } = await sb
       .from("subscriptions")

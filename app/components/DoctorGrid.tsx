@@ -13,7 +13,7 @@ export type DoctorView = {
 };
 
 const KEY = "sooner:v1";
-type Store = { email?: string; requested?: string[] };
+type Store = { email?: string; requested?: string[]; picked?: string };
 
 function load(): Store {
   try {
@@ -70,59 +70,93 @@ function Photo({ name, src }: { name: string; src: string | null }) {
   );
 }
 
-export default function DoctorGrid({ doctors }: { doctors: DoctorView[] }) {
+function Card({ d, on, onNotify }: { d: DoctorView; on: boolean; onNotify: () => void }) {
+  return (
+    <article className="card">
+      <Photo name={d.name} src={d.imageUrl} />
+      <div className="meta">
+        <h2 className="name">{d.name}</h2>
+        <div>
+          <div className="label">Next available</div>
+          {d.checking ? (
+            <div className="slot muted">Checking…</div>
+          ) : d.slot ? (
+            <>
+              <a className="slot" href={d.bookUrl} target="_blank" rel="noopener noreferrer">
+                <span className="day">{d.slot.day}</span>
+                <span className="time">{d.slot.time}</span>
+              </a>
+              <div className="rel">{d.slot.relative}</div>
+            </>
+          ) : (
+            <div className="slot muted">{d.callToBook ? "Call the clinic" : "None right now"}</div>
+          )}
+        </div>
+      </div>
+      <button type="button" className={`btn${on ? " on" : ""}`} onClick={onNotify}>
+        {on ? <CheckIcon size={16} /> : <span className="bell"><BellIcon size={16} /></span>}
+        {on ? "Alerts requested" : "Notify me if sooner"}
+      </button>
+    </article>
+  );
+}
+
+export default function DoctorGrid({ doctors, others }: { doctors: DoctorView[]; others: DoctorView[] }) {
   const [active, setActive] = useState<DoctorView | null>(null);
   const [requested, setRequested] = useState<string[]>([]);
   const [email, setEmail] = useState("");
+  const [picked, setPicked] = useState("");
 
   useEffect(() => {
     const s = load();
     setRequested(s.requested ?? []);
     setEmail(s.email ?? "");
-  }, []);
+    if (s.picked && others.some((d) => d.slug === s.picked)) setPicked(s.picked);
+  }, [others]);
 
   function onDone(slug: string, mail: string) {
     const next = Array.from(new Set([...requested, slug]));
     setRequested(next);
     setEmail(mail);
-    save({ email: mail, requested: next });
+    save({ ...load(), email: mail, requested: next });
   }
+
+  function onPick(slug: string) {
+    setPicked(slug);
+    save({ ...load(), picked: slug || undefined });
+  }
+
+  const pickedDoctor = others.find((d) => d.slug === picked);
 
   return (
     <>
       <div className="grid">
-        {doctors.map((d) => {
-          const on = requested.includes(d.slug);
-          return (
-            <article className="card" key={d.slug}>
-              <Photo name={d.name} src={d.imageUrl} />
-              <div className="meta">
-                <h2 className="name">{d.name}</h2>
-                <div>
-                  <div className="label">Next available</div>
-                  {d.checking ? (
-                    <div className="slot muted">Checking…</div>
-                  ) : d.slot ? (
-                    <>
-                      <a className="slot" href={d.bookUrl} target="_blank" rel="noopener noreferrer">
-                        <span className="day">{d.slot.day}</span>
-                        <span className="time">{d.slot.time}</span>
-                      </a>
-                      <div className="rel">{d.slot.relative}</div>
-                    </>
-                  ) : (
-                    <div className="slot muted">{d.callToBook ? "Call the clinic" : "None right now"}</div>
-                  )}
-                </div>
-              </div>
-              <button type="button" className={`btn${on ? " on" : ""}`} onClick={() => setActive(d)}>
-                {on ? <CheckIcon size={16} /> : <span className="bell"><BellIcon size={16} /></span>}
-                {on ? "Alerts requested" : "Notify me if sooner"}
-              </button>
-            </article>
-          );
-        })}
+        {doctors.map((d) => (
+          <Card key={d.slug} d={d} on={requested.includes(d.slug)} onNotify={() => setActive(d)} />
+        ))}
       </div>
+
+      {others.length > 0 && (
+        <section className="more">
+          <label className="more-label" htmlFor="other-doctor">Other doctors at this clinic</label>
+          <div className="select-wrap">
+            <select id="other-doctor" className="select" value={picked} onChange={(e) => onPick(e.target.value)}>
+              <option value="">Choose a doctor…</option>
+              {others.map((d) => (
+                <option key={d.slug} value={d.slug}>
+                  {d.name}
+                  {requested.includes(d.slug) ? " ✓" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          {pickedDoctor && (
+            <div className="grid">
+              <Card d={pickedDoctor} on={requested.includes(pickedDoctor.slug)} onNotify={() => setActive(pickedDoctor)} />
+            </div>
+          )}
+        </section>
+      )}
 
       {active && <Sheet doctor={active} initialEmail={email} onClose={() => setActive(null)} onDone={onDone} />}
     </>

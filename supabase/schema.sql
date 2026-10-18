@@ -1,4 +1,4 @@
--- Run this once in the Supabase SQL editor.
+-- Run this once in the Supabase SQL editor, then run v1.1.sql.
 
 create table if not exists public.doctors (
   slug text primary key,

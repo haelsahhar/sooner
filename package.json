@@ -1,12 +1,12 @@
 {
   "name": "sooner",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "poll": "node scripts/poll.mjs"
+    "poll": "node --env-file=.env.local -e \"fetch('http://localhost:3000/api/poll',{headers:{authorization:'Bearer '+process.env.CRON_SECRET}}).then(r=>r.text()).then(console.log)\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
